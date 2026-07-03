@@ -30,9 +30,7 @@ type Result struct {
 func worker(jobs <-chan Job, results chan<- Result, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for job := range jobs {
-		randomDuration := time.Duration(rand.Intn(1000)) * time.Millisecond
-		time.Sleep(randomDuration)
-		results <- Result{job, "success", randomDuration}
+		results <- process(job)
 	}
 }
 
@@ -69,5 +67,15 @@ func fill(jobs chan<- Job) {
 	defer close(jobs)
 	for i := 0; i < 5; i++ {
 		jobs <- Job{i, "http://google.com"}
+	}
+}
+
+func process(job Job) Result {
+	randomDuration := time.Duration(rand.Intn(1000)) * time.Millisecond
+	time.Sleep(randomDuration)
+	return Result{
+		job:      job,
+		status:   "processed",
+		duration: randomDuration,
 	}
 }

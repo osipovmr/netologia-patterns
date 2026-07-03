@@ -66,9 +66,25 @@ func main() {
 		close(results)
 	}()
 	go fill(jobs, urls)
+	var allResults []Result
+	var totalDuration time.Duration
+	successCount := 0
 	for result := range results {
-		fmt.Println(result.job.id, result.job.url, result.status, result.duration)
+
+		allResults = append(allResults, result)
+		totalDuration += result.duration
+		if result.status == "processed" {
+			successCount++
+		}
 	}
+	var average time.Duration
+	if len(allResults) > 0 {
+		average = totalDuration / time.Duration(len(allResults))
+	}
+	fmt.Println("Summary:")
+	fmt.Println("Processed:", len(allResults))
+	fmt.Println("Successful:", successCount)
+	fmt.Println("Average duration:", average)
 }
 
 // Шаг 5: Генерация заданий и агрегация результатов

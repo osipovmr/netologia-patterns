@@ -42,8 +42,20 @@ func worker(jobs <-chan Job, results chan<- Result, wg *sync.WaitGroup) {
 // ● После запуска воркеров вам нужно отправить все задания в канал jobs и закрыть его, чтобы воркеры знали, когда остановиться.
 // ● Запустите в отдельной горутине код, который с помощью wg.Wait() дождётся завершения всех воркеров и затем закроет канал results.
 func main() {
+	urls := []string{
+		"http://google.com",
+		"http://yandex.ru",
+		"http://github.com",
+		"http://golang.org",
+		"http://netology.ru",
+		"http://example.com",
+		"http://openai.com",
+		"http://wikipedia.org",
+		"http://stackoverflow.com",
+		"http://reddit.com",
+	}
 	jobs := make(chan Job)
-	results := make(chan Result)
+	results := make(chan Result, len(urls))
 	wg := new(sync.WaitGroup)
 	for i := 0; i < 5; i++ {
 		wg.Add(1)
@@ -53,7 +65,7 @@ func main() {
 		wg.Wait()
 		close(results)
 	}()
-	fill(jobs)
+	go fill(jobs, urls)
 	for result := range results {
 		fmt.Println(result.job.id, result.job.url, result.status, result.duration)
 	}
@@ -63,10 +75,13 @@ func main() {
 // ● Наполните канал jobs заданиями на основе вашего списка URL.
 // ● В главной горутине (в функции main) используйте цикл for range по каналу results, чтобы прочитать все результаты и, например, собрать их в слайс.
 // ● Выведите финальный отчёт: список всех обработанных URL с их временем выполнения и общую статистику (например, среднее время, количество успешных операций).
-func fill(jobs chan<- Job) {
+func fill(jobs chan<- Job, urls []string) {
 	defer close(jobs)
-	for i := 0; i < 5; i++ {
-		jobs <- Job{i, "http://google.com"}
+	for i, url := range urls {
+		jobs <- Job{
+			id:  i,
+			url: url,
+		}
 	}
 }
 

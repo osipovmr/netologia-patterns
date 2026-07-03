@@ -28,8 +28,8 @@ type Result struct {
 // ● Внутри цикла вызовите функцию-заглушку для имитации запроса (например, time.Sleep(randomDuration)).
 // ● Отправьте результат обработки в канал результатов.
 func worker(jobs <-chan Job, results chan<- Result, wg *sync.WaitGroup) {
+	defer wg.Done()
 	for job := range jobs {
-		defer wg.Done()
 		randomDuration := time.Duration(rand.Intn(1000)) * time.Millisecond
 		time.Sleep(randomDuration)
 		results <- Result{job, "success", randomDuration}
